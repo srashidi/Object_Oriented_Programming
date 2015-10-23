@@ -1,10 +1,13 @@
 # The general class for the game
 class TicTacToe
 
+	# Possibilities of winning
 	WIN = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]]
 
+	# Allows access to the 3 rows across methods
 	attr_accessor :row1, :row2, :row3
 
+	# Introduces the game and begins the first round
 	def initialize
 		@row1 = "   |   |   "
 		@row2 = "   |   |   "
@@ -17,9 +20,30 @@ class TicTacToe
 		puts " 4 | 5 | 6 \n-----------"
 		puts " 7 | 8 | 9 \n\n"
 		puts "X goes first."
-		round("X")
+		turn("X")
 	end
 
+	# Initiates a player's turn
+	def turn(piece)
+		puts "\nChoose position for #{piece}, or ask for 'help',"
+		puts "or ask to 'display' the board:"
+		position = gets.chomp.strip.downcase
+		position = position.to_i unless position == "help" || position == "display"
+		if position == "help"
+			help
+			turn(piece)
+		elsif position == "display"
+			display
+			turn(piece)
+		elsif spot_empty?(position)
+			place_piece(position,piece)
+		else
+			puts "\nNot a valid entry. Try again."
+			turn(piece)
+		end
+	end
+
+	# Displays the game board
 	def display
 		puts "\n"
 		puts row1
@@ -30,76 +54,72 @@ class TicTacToe
 		puts "\n"
 	end
 
+	def spot_empty?(position)
+			case position
+			when 1
+				spot = row1[1]
+			when 2
+				spot = row1[5]
+			when 3
+				spot = row1[9]
+			when 4
+				spot = row2[1]
+			when 5
+				spot = row2[5]
+			when 6
+				spot = row2[9]
+			when 7
+				spot = row3[1]
+			when 8
+				spot = row3[5]
+			when 9
+				spot = row3[9]
+			end
+			if spot =~ /\s/
+				true
+			else
+				false
+			end
+		end
+
+	# When player calls for help, displays guide gameboard
+	def help
+		puts "\n"
+		puts " 1 | 2 | 3 \n-----------"
+		puts " 4 | 5 | 6 \n-----------"
+		puts " 7 | 8 | 9 \n\n"
+	end
+
+	# Places a piece in the chosen position
 	def place_piece(position,piece)
 		case position
 		when 1
-			spot = row1[1]
+			row1[1] = piece
 		when 2
-			spot = row1[5]
+			row1[5] = piece
 		when 3
-			spot = row1[9]
+			row1[9] = piece
 		when 4
-			spot = row2[1]
+			row2[1] = piece
 		when 5
-			spot = row2[5]
+			row2[5] = piece
 		when 6
-			spot = row2[9]
+			row2[9] = piece
 		when 7
-			spot = row3[1]
+			row3[1] = piece
 		when 8
-			spot = row3[5]
+			row3[5] = piece
 		when 9
-			spot = row3[9]
-		when "help"
-			puts "\n"
-			puts " 1 | 2 | 3 \n-----------"
-			puts " 4 | 5 | 6 \n-----------"
-			puts " 7 | 8 | 9 \n\n"
-			round(piece)
-		else
-			puts "\nNot a valid entry. Try again."
-			round(piece)
+			row3[9] = piece
 		end
-		if spot =~ /\s/
-			case position
-			when 1
-				row1[1] = piece
-			when 2
-				row1[5] = piece
-			when 3
-				row1[9] = piece
-			when 4
-				row2[1] = piece
-			when 5
-				row2[5] = piece
-			when 6
-				row2[9] = piece
-			when 7
-				row3[1] = piece
-			when 8
-				row3[5] = piece
-			when 9
-				row3[9] = piece
-			end
-			puts "\nYour #{piece} piece was placed in position #{position}."
-			display
-			if piece == "X"
-				piece = "O"
-			elsif piece == "O"
-				piece = "X"
-			end
-			round(piece)		
-		else
-			puts "\nThere is already a piece in position #{position}. Try again."
-			round(piece)
+		puts "\nYour #{piece} piece was placed in position #{position}."
+		display
+		if piece == "X"
+			piece = "O"
+		elsif piece == "O"
+			piece = "X"
 		end
-	end
-
-	def round(piece)
-		puts "\nChoose position for #{piece}, or ask for 'help':"
-		position = gets.chomp.strip.downcase
-		position = position.to_i unless position == "help"
-		place_piece(position,piece)
+		turn(piece)
 	end
 
 end
