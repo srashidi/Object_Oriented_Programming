@@ -134,6 +134,7 @@ class TicTacToe
 		puts " 7 | 8 | 9 \n\n"
 	end
 
+	# Checks if the current player has won
 	def win?(piece)
 		win_array = []
 		if piece == "X"
@@ -151,6 +152,7 @@ class TicTacToe
 		win_array.include?("win")
 	end
 
+	# Gives the option of playing again
 	def play_again
 		puts "Play again? (type 'yes' or 'no')"
 		response = gets.chomp.strip.downcase
@@ -165,6 +167,7 @@ class TicTacToe
 		end
 	end
 
+	# Checks if all the spots on the gameboard have been filled
 	def all_spots_full?
 		true if @array_X.size == 5
 	end
