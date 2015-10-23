@@ -25,15 +25,17 @@ class TicTacToe
 	# Initiates a player's turn
 	def turn(piece)
 		puts "\nChoose position for #{piece}, or ask to 'display'"
-		puts "the board, or ask for 'help':"
+		puts "the board, or ask for 'help', or ask to 'exit':"
 		position = gets.chomp.strip.downcase
-		position = position.to_i unless position == "help" || position == "display"
+		position = position.to_i unless position == "help" || position == "display" || position == "exit"
 		if position == "help"
 			help
 			turn(piece)
 		elsif position == "display"
 			display
 			turn(piece)
+		elsif position == "exit"
+			puts "Goodbye!"				
 		elsif spot_empty?(position)
 			place_piece(position,piece)
 			if piece == "X"
@@ -44,7 +46,11 @@ class TicTacToe
 				piece = "X" unless win?(piece)
 			end
 			if win?(piece)
-				puts "#{piece}'s win! Play again?"
+				puts "#{piece}'s win!"
+				play_again
+			elsif all_spots_full?
+				puts "It's a draw!"
+				play_again
 			else
 				turn(piece)
 			end
@@ -143,6 +149,24 @@ class TicTacToe
 			end
 		end
 		win_array.include?("win")
+	end
+
+	def play_again
+		puts "Play again? (type 'yes' or 'no')"
+		response = gets.chomp.strip.downcase
+		if response == "yes"
+			puts "\n\n"
+			initialize
+		elsif response == "no"
+			puts "Goodbye!"
+		else
+			puts "\nNot a valid entry. Try again."
+			play_again
+		end
+	end
+
+	def all_spots_full?
+		true if @array_X.size == 5
 	end
 
 end
