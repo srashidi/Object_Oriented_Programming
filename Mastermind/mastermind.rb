@@ -91,7 +91,6 @@ class Mastermind
 			4.times do
 				guess.push(COLORS[i])
 			end
-			puts guess.inspect
 			@guess_array.push(guess)
 			correct_colors = KeyPeg.new(guess,@secret_code).correct_color_correct_position
 			if correct_colors > 0
@@ -105,9 +104,14 @@ class Mastermind
 			@secret_code.map! {|color| color.to_sym}
 			computer_smart_guess(i+1)
 		end
-		puts @final_guess.inspect
-		@final_guess.shuffle! if @final_guess.size == 4
-		guess unless @final_guess.size == 4
+		if guess == []
+			@final_guess.shuffle!
+			computer_smart_guess if @guess_array.include?(@final_guess)
+			@guess_array.push(@final_guess)
+			@final_guess
+		else
+			guess
+		end
 	end
 
 	# Provides feedback for each guess
@@ -135,7 +139,7 @@ class Mastermind
 	# Loop for how a computer would guess the code
 	def computer_rounds
 		tries = 0
-		guess = computer_random_guess
+		guess = []
 		until guess == @secret_code
 			guess = computer_random_guess
 			tries += 1
