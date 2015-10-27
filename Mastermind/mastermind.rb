@@ -6,7 +6,7 @@ class Mastermind
 
 	# The start of gameplay
 	def initialize
-		puts "You have initiated a new game of Mastermind!\n"
+		puts "\nYou have initiated a new game of Mastermind!\n"
 
 		# Chooses whether codemaker is human or computer
 		codemaker_brain = choose_brain("codemaker")
@@ -23,6 +23,7 @@ class Mastermind
 			@secret_code = human_secret_code
 		end
 
+		# Add space so the human codebreaker cannot see the human-made code
 		if codemaker_brain == :human && codebreaker_brain == :human
 			puts "\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\
 			\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v"
@@ -32,8 +33,12 @@ class Mastermind
 		if codebreaker_brain == :human
 			human_rounds
 		elsif codebreaker_brain == :computer
+			@guess_array = []
+			@final_guess = []
 			computer_rounds
 		end
+
+		play_again
 				
 	end
 
@@ -62,18 +67,57 @@ class Mastermind
 
 	# Computer creates random code
 	def computer_random_code
-		code_array = []
+		code = []
 		4.times do
-			code_array.push(COLORS[rand(6)])
+			code.push(COLORS[rand(6)])
 		end
-		code_array
+		code
 	end
 
+	def computer_random_guess
+		guess = computer_random_code
+		if @guess_array.include?(guess)
+			computer_random_guess
+		else
+			@guess_array.push(guess)
+			guess
+		end
+	end
+
+	# Computer chooses code based on feedback
+	def computer_smart_guess(i=0)
+		guess = []
+		unless @guess_array.size == 6 || @final_guess.size == 4
+			4.times do
+				guess.push(COLORS[i])
+			end
+			puts guess.inspect
+			@guess_array.push(guess)
+			correct_colors = KeyPeg.new(guess,@secret_code).correct_color_correct_position
+			if correct_colors > 0
+				correct_colors.times do
+					@final_guess.push(COLORS[i])
+				end
+			end
+			@guess_array.each do |array|
+				array.map! {|element| element.to_sym}
+			end
+			@secret_code.map! {|color| color.to_sym}
+			computer_smart_guess(i+1)
+		end
+		puts @final_guess.inspect
+		@final_guess.shuffle! if @final_guess.size == 4
+		guess unless @final_guess.size == 4
+	end
+
+	# Provides feedback for each guess
 	def round_feedback(guesser,guess,tries)
-		puts "Guess ##{tries}: #{guesser.capitalize} guessed #{guess.join}"
-		KeyPeg.new(guess,@secret_code) unless guess == @secret_code
+		puts guess.inspect
+		puts "\nGuess ##{tries}: #{guesser.capitalize} guessed #{guess.join}"
+		KeyPeg.new(guess,@secret_code).feedback unless guess == @secret_code
 	end
 
+	# Loop for how a human would guess the code
 	def human_rounds
 		tries = 0
 		guess = []
@@ -88,11 +132,12 @@ class Mastermind
 		: "\nFailure! You didn't guess in the first 12 tries."
 	end
 
+	# Loop for how a computer would guess the code
 	def computer_rounds
 		tries = 0
-		guess = []
+		guess = computer_random_guess
 		until guess == @secret_code
-			guess = computer_random_code
+			guess = computer_random_guess
 			tries += 1
 			round_feedback("computer",guess,tries)
 		end
@@ -130,6 +175,20 @@ class Mastermind
 		Blue ('B'), Purple ('P'). For example, if\n\
 		your code sequence is Red Yellow Red Green,\n\
 		type RYRG with no spaces or punctuation."
+	end
+
+	# Gives the option of playing again
+	def play_again
+		puts "\nPlay again ('yes' or 'no')?"
+		response = gets.chomp.strip.downcase
+		if response == "yes"
+			initialize
+		elsif response == "no"
+			puts "\nGoodbye!\n\n"
+		else
+			invalid_input
+			play_again
+		end				
 	end
 
 	# Default message for invalid input
@@ -170,14 +229,13 @@ end
 # Key peg class
 class KeyPeg
 
+	# Takes the guess code and the secret code
 	def initialize(guess, secret)
 		@guess = guess
 		@secret = secret
-		a = correct_color_correct_position
-		b = correct_color_wrong_position
-		feedback(a,b)
 	end
 
+	# Enumerates pegs that are correct color and correct position
 	def correct_color_correct_position
 		i = 0
 		num = 0
@@ -192,6 +250,7 @@ class KeyPeg
 		num
 	end
 
+	# Enumerates pegs that are correct color and incorrect position
 	def correct_color_wrong_position
 		i = 0
 		j = 0
@@ -215,22 +274,23 @@ class KeyPeg
 		num
 	end
 
-	def feedback(color_and_position_correct,just_color_correct)
-		if color_and_position_correct == 1 && just_color_correct == 1
-			puts "You have #{color_and_position_correct} color that is correct and\n\
-			in the correct position and #{just_color_correct} color that is\n\
+	# Gives possibilities for feedback, accounting for plurality
+	def feedback
+		if correct_color_correct_position == 1 && correct_color_wrong_position == 1
+			puts "You have #{correct_color_correct_position} color that is correct and\n\
+			in the correct position and #{correct_color_wrong_position} color that is\n\
 			correct but in the wrong position."
-		elsif color_and_position_correct == 1
-			puts "You have #{color_and_position_correct} color that is correct and\n\
-			in the correct position and #{just_color_correct} colors that are\n\
+		elsif correct_color_correct_position == 1
+			puts "You have #{correct_color_correct_position} color that is correct and\n\
+			in the correct position and #{correct_color_wrong_position} colors that are\n\
 			correct but in the wrong position."
-		elsif just_color_correct == 1
-			puts "You have #{color_and_position_correct} colors that are correct and\n\
-			in the correct position and #{just_color_correct} color that is\n\
+		elsif correct_color_wrong_position == 1
+			puts "You have #{correct_color_correct_position} colors that are correct and\n\
+			in the correct position and #{correct_color_wrong_position} color that is\n\
 			correct but in the wrong position."
 		else
-			puts "You have #{color_and_position_correct} colors that are correct and\n\
-			in the correct position and #{just_color_correct} colors that are\n\
+			puts "You have #{correct_color_correct_position} colors that are correct and\n\
+			in the correct position and #{correct_color_wrong_position} colors that are\n\
 			correct but in the wrong position."
 		end	
 	end
