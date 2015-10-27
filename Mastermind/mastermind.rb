@@ -170,9 +170,9 @@ end
 # Key peg class
 class KeyPeg
 
-	def initialize(guess, secret_code)
+	def initialize(guess, secret)
 		@guess = guess
-		@secret_code = secret_code
+		@secret = secret
 		a = correct_color_correct_position
 		b = correct_color_wrong_position
 		feedback(a,b)
@@ -182,10 +182,10 @@ class KeyPeg
 		i = 0
 		num = 0
 		4.times do
-			if @guess[i] == @secret_code[i]
+			if @guess[i] == @secret[i]
 				num += 1
-				@guess[i] = nil
-				@secret_code[i] = nil
+				@guess[i] = @guess[i].to_s
+				@secret[i] = @secret[i].to_s
 			end
 			i += 1
 		end
@@ -198,11 +198,11 @@ class KeyPeg
 		num = 0
 		@guess.each do |guess_color|
 			if guess_color.is_a?(Symbol)
-				@secret_code.each do |secret_color|
+				@secret.each do |secret_color|
 					if guess_color == secret_color
 						num += 1
-						@guess[i] = nil
-						@secret_code[j] = nil
+						@guess[i] = @guess[i].to_s
+						@secret[j] = @secret[j].to_s
 					end
 					j += 1
 				end
@@ -210,6 +210,8 @@ class KeyPeg
 			i += 1
 			j = 0
 		end
+		@guess.map! {|color| color.to_sym}
+		@secret.map! {|color| color.to_sym}
 		num
 	end
 
