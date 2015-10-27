@@ -1,6 +1,9 @@
 # Gameplay class
 class Mastermind
 
+	# The array of possible color pegs
+	COLORS = [:R,:O,:Y,:G,:B,:P]
+
 	# The start of gameplay
 	def initialize
 		puts "You have initiated a new game of Mastermind!\n"
@@ -14,8 +17,24 @@ class Mastermind
 		@codebreaker = Player.new(codebreaker_brain,:codebreaker)
 
 		# Creates a new secret code
-		@secret_code = SecretCode.new(codemaker_brain)
+		if codemaker_brain == :computer
+			@secret_code = computer_random_code
+		elsif codemaker_brain == :human
+			@secret_code = human_secret_code
+		end
 
+		if codemaker_brain == :human && codebreaker_brain == :human
+			puts "\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\
+			\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v\v"
+		end
+
+		# Starts the codebreaker's player rounds
+		if codebreaker_brain == :human
+			human_rounds
+		elsif codebreaker_brain == :computer
+			computer_rounds
+		end
+				
 	end
 
 	# Chooses whether a player is human or computer
@@ -28,6 +47,85 @@ class Mastermind
 			brain = gets.chomp.strip.downcase.to_sym
 		end
 		brain
+	end
+
+	# Takes inputted code from a human player
+	def human_code_input
+		code_string = gets.chomp.strip.upcase
+		if code_string.size != 4 || code_string.index(/[^ROYGBP]/)
+			invalid_input
+			human_code_input
+		else
+			code = code_string.split(//).map {|color| color.to_sym}
+		end
+	end
+
+	def human_rounds
+		tries = 0
+		guess = []
+		until guess == @secret_code
+			human_guess_directions
+			puts "\nYour guess:"
+			guess = human_code_input
+			tries += 1
+			puts "Guess ##{tries}: You guessed #{guess.join}"
+			puts "This is INCORRECT!" unless guess == @secret_code
+		end
+		puts "This is CORRECT! It took #{tries} tries."
+	end
+
+	# Gives directions for the human codebreaker to guess the secret code
+	def human_guess_directions
+		puts "\nCodebreaker, using the first letter of the\n\
+		following six colors, guess the secret code\n\
+		made up of four of these colors (duplicates\n\
+		of a color are allowed): Red ('R'),\n\
+		Orange ('O'), Yellow ('Y'), Green ('G'),\n\
+		Blue ('B'), Purple ('P'). For example, if\n\
+		your code sequence is Red Yellow Red Green,\n\
+		type RYRG with no spaces or punctuation."
+	end
+
+	# Computer creates random code
+	def computer_random_code
+		code_array = []
+		4.times do
+			code_array.push(COLORS[rand(6)])
+		end
+		code_array
+	end
+
+	def computer_rounds
+		tries = 0
+		guess = []
+		until guess == @secret_code
+			guess = computer_random_code
+			tries += 1
+			puts "Guess ##{tries}: Computer guessed #{guess.join}"
+			puts "This is INCORRECT!" unless guess == @secret_code
+		end
+		puts "This is CORRECT! It took #{tries} tries."
+	end
+
+	# Takes input for the secret code
+	def human_secret_code
+		human_secret_code_directions
+		puts "\nYour secret code:"
+		secret_code = human_code_input
+		puts "Your secret code is #{secret_code.join}"
+		secret_code
+	end
+
+	# Gives directions for the human player to create a secret code
+	def human_secret_code_directions
+		puts "\nCodemaker, using the first letter of the\n\
+		following six colors, create a secret code\n\
+		made up of four of these colors (duplicates\n\
+		of a color are allowed): Red ('R'),\n\
+		Orange ('O'), Yellow ('Y'), Green ('G'),\n\
+		Blue ('B'), Purple ('P'). For example, if\n\
+		your code sequence is Red Yellow Red Green,\n\
+		type RYRG with no spaces or punctuation."
 	end
 
 	# Default message for invalid input
@@ -43,9 +141,11 @@ class Mastermind
 	# Player class
 	class Player
 
+		# Define player type classes
 		Human = Class.new
 		Computer = Class.new
 
+		# Creates new player based on player type
 		def initialize(brain, role)
 			if brain == :human
 				@player = Human.new
@@ -54,65 +154,11 @@ class Mastermind
 			end
 		end
 
+		# Returns player type as a class
 		def brain
 			@player.class
 		end
 
-	end
-
-	# Secret code class
-	class SecretCode < Mastermind
-
-		COLORS = [:R,:O,:Y,:G,:B,:P]
-
-		def initialize(brain)
-			@secret_code = []
-			if brain == :computer
-				computer_secret_code
-			elsif brain == :human
-				human_secret_code_directions
-				human_secret_code
-			end
-			@secret_code
-		end
-
-		def computer_secret_code
-			4.times do
-				@secret_code.push(COLORS[rand(6)])
-			end
-		end
-
-		def human_secret_code_directions
-			puts "\nCodemaker, using the first letter of the"
-			puts "following six colors, create a secret code"
-			puts "made up of four of these colors (duplicates"
-			puts "of a color are allowed): Red ('R'),"
-			puts "Orange ('O'), Yellow ('Y'), Green ('G'),"
-			puts "Blue ('B'), Purple ('P'). For example, if"
-			puts "your code sequence is Red Yellow Red Green,"
-			puts "type RYRG with no spaces or punctuation."
-		end
-
-		def human_secret_code
-			puts "\nYour secret code:"
-			secret_string = gets.chomp.strip.upcase
-			if secret_string.size != 4 || secret_string.index(/[^ROYGBP]/)
-				invalid_input
-				human_secret_code
-			else
-				puts "Your secret code is #{secret_string}"
-				@secret_code = secret_string.split(//).map {|color| color.to_sym}
-			end
-		end
-		
-	end
-
-end
-
-# Code peg class
-class GuessCode
-
-	def initialize(color_sequence_array)
 	end
 
 end
