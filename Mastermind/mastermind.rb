@@ -10,11 +10,9 @@ class Mastermind
 
 		# Chooses whether codemaker is human or computer
 		codemaker_brain = choose_brain("codemaker")
-		@codemaker = Player.new(codemaker_brain,:codemaker)
 
 		# Chooses whether codebreaker is human or computer
 		codebreaker_brain = choose_brain("codebreaker")
-		@codebreaker = Player.new(codebreaker_brain,:codebreaker)
 
 		# Creates a new secret code
 		if codemaker_brain == :computer
@@ -74,6 +72,7 @@ class Mastermind
 		code
 	end
 
+	# Computer makes a random guess without repeating a previous guess
 	def computer_random_guess
 		guess = computer_random_code
 		if @guess_array.include?(guess)
@@ -87,36 +86,43 @@ class Mastermind
 	# Computer chooses code based on feedback
 	def computer_smart_guess(i=0)
 		guess = []
-		unless @guess_array.size == 6 || @final_guess.size == 4
-			4.times do
+		unless @final_guess.size == 4
+			while guess.size < 4
 				guess.push(COLORS[i])
 			end
-			@guess_array.push(guess)
-			correct_colors = KeyPeg.new(guess,@secret_code).correct_color_correct_position
+			correct_colors = correct_color_correct_position(guess)
 			if correct_colors > 0
 				correct_colors.times do
 					@final_guess.push(COLORS[i])
 				end
 			end
-			@guess_array.each do |array|
-				array.map! {|element| element.to_sym}
+			@guess_array.push(guess)
+			guess
+		else
+			while @guess_array.include?(@final_guess)
+				@final_guess = @final_guess.shuffle
 			end
-			@secret_code.map! {|color| color.to_sym}
-			computer_smart_guess(i+1)
-		end
-		if guess == []
-			@final_guess.shuffle!
-			computer_smart_guess if @guess_array.include?(@final_guess)
 			@guess_array.push(@final_guess)
 			@final_guess
-		else
-			guess
 		end
+	end
+
+	# Determines the number of pegs that are the
+	# correct color and the correct position
+	def correct_color_correct_position(guess)
+		i = 0
+		num = 0
+		4.times do
+			if guess[i] == @secret_code[i]
+				num += 1
+			end
+			i += 1
+		end
+		num
 	end
 
 	# Provides feedback for each guess
 	def round_feedback(guesser,guess,tries)
-		puts guess.inspect
 		puts "\nGuess ##{tries}: #{guesser.capitalize} guessed #{guess.join}"
 		KeyPeg.new(guess,@secret_code).feedback unless guess == @secret_code
 	end
@@ -141,7 +147,7 @@ class Mastermind
 		tries = 0
 		guess = []
 		until guess == @secret_code
-			guess = computer_random_guess
+			guess = computer_smart_guess(tries)
 			tries += 1
 			round_feedback("computer",guess,tries)
 		end
@@ -150,14 +156,15 @@ class Mastermind
 
 	# Gives directions for the human codebreaker to guess the secret code
 	def human_guess_directions
-		puts "\nCodebreaker, using the first letter of the\n\
-		following six colors, guess the secret code\n\
-		made up of four of these colors (duplicates\n\
-		of a color are allowed): Red ('R'),\n\
-		Orange ('O'), Yellow ('Y'), Green ('G'),\n\
-		Blue ('B'), Purple ('P'). For example, if\n\
-		your code sequence is Red Yellow Red Green,\n\
-		type RYRG with no spaces or punctuation."
+		puts "\nCodebreaker, using the first letter of the"
+		puts "following six colors, guess the secret code"
+		puts "made up of four of these colors (duplicates"
+		puts "of a color are allowed): Red ('R'),"
+		puts "Orange ('O'), Yellow ('Y'), Green ('G'),"
+		puts "Blue ('B'), Purple ('P'). For example, if"
+		puts "your code sequence is Red Yellow Red Green,"
+		puts "type RYRG with no spaces or punctuation."
+		puts "You have 12 guesses."
 	end
 
 	# Takes input for the secret code
@@ -171,14 +178,14 @@ class Mastermind
 
 	# Gives directions for the human player to create a secret code
 	def human_secret_code_directions
-		puts "\nCodemaker, using the first letter of the\n\
-		following six colors, create a secret code\n\
-		made up of four of these colors (duplicates\n\
-		of a color are allowed): Red ('R'),\n\
-		Orange ('O'), Yellow ('Y'), Green ('G'),\n\
-		Blue ('B'), Purple ('P'). For example, if\n\
-		your code sequence is Red Yellow Red Green,\n\
-		type RYRG with no spaces or punctuation."
+		puts "\nCodemaker, using the first letter of the"
+		puts "following six colors, create a secret code"
+		puts "made up of four of these colors (duplicates"
+		puts "of a color are allowed): Red ('R'),"
+		puts "Orange ('O'), Yellow ('Y'), Green ('G'),"
+		puts "Blue ('B'), Purple ('P'). For example, if"
+		puts "your code sequence is Red Yellow Red Green,"
+		puts "type RYRG with no spaces or punctuation."
 	end
 
 	# Gives the option of playing again
@@ -198,34 +205,6 @@ class Mastermind
 	# Default message for invalid input
 	def invalid_input
 		puts "\nInvalid input. Try again.\n"
-	end
-
-end
-
-# Nested classes in Mastermind class
-class Mastermind
-
-	# Player class
-	class Player
-
-		# Define player type classes
-		Human = Class.new
-		Computer = Class.new
-
-		# Creates new player based on player type
-		def initialize(brain, role)
-			if brain == :human
-				@player = Human.new
-			elsif brain == :computer
-				@player = Computer.new
-			end
-		end
-
-		# Returns player type as a class
-		def brain
-			@player.class
-		end
-
 	end
 
 end
@@ -281,21 +260,21 @@ class KeyPeg
 	# Gives possibilities for feedback, accounting for plurality
 	def feedback
 		if correct_color_correct_position == 1 && correct_color_wrong_position == 1
-			puts "You have #{correct_color_correct_position} color that is correct and\n\
-			in the correct position and #{correct_color_wrong_position} color that is\n\
-			correct but in the wrong position."
+			puts "You have #{correct_color_correct_position} color that is correct and"
+			puts "in the correct position and #{correct_color_wrong_position} color"
+			puts "that is correct but in the wrong position."
 		elsif correct_color_correct_position == 1
-			puts "You have #{correct_color_correct_position} color that is correct and\n\
-			in the correct position and #{correct_color_wrong_position} colors that are\n\
-			correct but in the wrong position."
+			puts "You have #{correct_color_correct_position} color that is correct and"
+			puts "in the correct position and #{correct_color_wrong_position} colors"
+			puts "that are correct but in the wrong position."
 		elsif correct_color_wrong_position == 1
-			puts "You have #{correct_color_correct_position} colors that are correct and\n\
-			in the correct position and #{correct_color_wrong_position} color that is\n\
-			correct but in the wrong position."
+			puts "You have #{correct_color_correct_position} colors that are correct and"
+			puts "in the correct position and #{correct_color_wrong_position} color"
+			puts "that is correct but in the wrong position."
 		else
-			puts "You have #{correct_color_correct_position} colors that are correct and\n\
-			in the correct position and #{correct_color_wrong_position} colors that are\n\
-			correct but in the wrong position."
+			puts "You have #{correct_color_correct_position} colors that are correct and"
+			puts "in the correct position and #{correct_color_wrong_position} colors"
+			puts "that are correct but in the wrong position."
 		end	
 	end
 
