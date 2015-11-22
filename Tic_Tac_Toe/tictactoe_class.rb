@@ -26,7 +26,7 @@ class TicTacToe
 	def turn(piece)
 		puts "\nChoose position for #{piece}, or ask to 'display'"
 		puts "the board, or ask for 'help', or ask to 'exit':"
-		position = gets.chomp.strip.downcase
+		position = STDIN.gets.chomp.strip.downcase
 		position = position.to_i unless position == "help" || position == "display" || position == "exit"
 		if position == "help"
 			help
@@ -155,7 +155,7 @@ class TicTacToe
 	# Gives the option of playing again
 	def play_again
 		puts "Play again? (type 'yes' or 'no')"
-		response = gets.chomp.strip.downcase
+		response = STDIN.gets.chomp.strip.downcase
 		if response == "yes"
 			puts "\n\n"
 			initialize
@@ -173,6 +173,3 @@ class TicTacToe
 	end
 
 end
-
-# Create a new game
-new_game = TicTacToe.new
