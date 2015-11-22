@@ -22,11 +22,16 @@ class TicTacToe
 		turn("X")
 	end
 
+	# Takes user input unless a string is given
+	def user_input
+		STDIN.gets.chomp.strip.downcase
+	end
+
 	# Initiates a player's turn
 	def turn(piece)
 		puts "\nChoose position for #{piece}, or ask to 'display'"
 		puts "the board, or ask for 'help', or ask to 'exit':"
-		position = STDIN.gets.chomp.strip.downcase
+		position = user_input
 		position = position.to_i unless position == "help" || position == "display" || position == "exit"
 		if position == "help"
 			help
@@ -39,10 +44,8 @@ class TicTacToe
 		elsif spot_empty?(position)
 			place_piece(position,piece)
 			if piece == "X"
-				@array_X.push(position)
 				piece = "O" unless win?(piece)
 			elsif piece == "O"
-				@array_O.push(position)
 				piece = "X" unless win?(piece)
 			end
 			if win?(piece)
@@ -111,6 +114,11 @@ class TicTacToe
 		when 9
 			@row3[9] = piece
 		end
+		if piece == "X"
+			@array_X.push(position)
+		elsif piece == "O"
+			@array_O.push(position)
+		end
 		puts "\nYour #{piece} piece was placed in position #{position}."
 		display
 	end
@@ -155,7 +163,7 @@ class TicTacToe
 	# Gives the option of playing again
 	def play_again
 		puts "Play again? (type 'yes' or 'no')"
-		response = STDIN.gets.chomp.strip.downcase
+		response = user_input
 		if response == "yes"
 			puts "\n\n"
 			initialize

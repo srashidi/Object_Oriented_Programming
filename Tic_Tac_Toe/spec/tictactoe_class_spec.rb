@@ -2,23 +2,36 @@ require 'spec_helper'
 
 describe TicTacToe do
 	
-	before :all do
-		@tictactoe = TicTacToe.new
-	end
-
 	describe "#new" do
 		it "starts a new game" do
-			expect(@tictactoe).to be_an_instance_of TicTacToe
+			expect(subject).to be_an_instance_of TicTacToe
+			subject.user_input
 		end
+		
 	end
-	
-	describe "#turn" do
-		context "when 'display' is typed in" do
-			it "activates the display method" do
-				#allow(@tictactoe).to receive(:gets).and_return("display")
-				expect(@tictactoe).to receive(:display)
+=begin
+	describe "#win?" do
+		
+		before :each do
+			@tictactoe = TicTacToe.new
+		end
+		
+		context "player does not make winning move" do
+			it "moves on to the next player" do
+				@tictactoe.user_input("5\n")
+				expect(@tictactoe).to receive(:turn)
 			end
 		end
+		
+		context "player makes winning move" do
+			it "ends the game and asks the player to play again" do
+			end
+		end
+		
+		after :example do
+			STDIN.puts "exit\n"
+		end
+		
 	end
-
+=end
 end
