@@ -5,12 +5,17 @@ class TicTacToe
 	WIN = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]]
 
 	# Introduces the game and begins the first round
-	def initialize
+	def initialize(input_given = nil)
 		@row1 = "   |   |   "
 		@row2 = "   |   |   "
 		@row3 = "   |   |   "
 		@array_X = []
 		@array_O = []
+		@input_given = input_given
+		introduction unless input_given
+	end
+
+	def introduction
 		puts "You have initiated a game of Tic-Tac-Toe!"
 		puts "When choosing a spot on the board, use the"
 		puts "numbers 1 through 9 like so:"
@@ -22,17 +27,11 @@ class TicTacToe
 		turn("X")
 	end
 
-	# Takes user input unless a string is given
-	def user_input
-		STDIN.gets.chomp.strip.downcase
-	end
-
 	# Initiates a player's turn
 	def turn(piece)
 		puts "\nChoose position for #{piece}, or ask to 'display'"
 		puts "the board, or ask for 'help', or ask to 'exit':"
-		position = user_input
-		position = position.to_i unless position == "help" || position == "display" || position == "exit"
+		position = STDIN.gets.chomp.strip.downcase
 		if position == "help"
 			help
 			turn(piece)
@@ -40,9 +39,10 @@ class TicTacToe
 			display
 			turn(piece)
 		elsif position == "exit"
-			puts "Goodbye!"				
-		elsif spot_empty?(position)
-			place_piece(position,piece)
+			puts "Goodbye!"
+		elsif /\d/ =~ position
+			transition(position,piece)
+			display
 			if piece == "X"
 				piece = "O" unless win?(piece)
 			elsif piece == "O"
@@ -50,16 +50,24 @@ class TicTacToe
 			end
 			if win?(piece)
 				puts "#{piece}'s win!"
-				play_again
+				play_again_input
 			elsif all_spots_full?
 				puts "It's a draw!"
-				play_again
+				play_again_input
 			else
 				turn(piece)
 			end
 		else
 			puts "\nNot a valid entry. Try again."
 			turn(piece)
+		end
+	end
+
+	def transition(position,piece)
+		position = position.to_i
+		if spot_empty?(position)
+			place_piece(position,piece)
+			puts "\nYour #{piece} piece was placed in position #{position}."
 		end
 	end
 
@@ -119,8 +127,6 @@ class TicTacToe
 		elsif piece == "O"
 			@array_O.push(position)
 		end
-		puts "\nYour #{piece} piece was placed in position #{position}."
-		display
 	end
 
 	# Displays the game board
@@ -144,7 +150,6 @@ class TicTacToe
 
 	# Checks if the current player has won
 	def win?(piece)
-		win_array = []
 		if piece == "X"
 			current_array = @array_X
 		elsif piece == "O"
@@ -152,26 +157,29 @@ class TicTacToe
 		end
 		WIN.each do |possibility|
 			if possibility - current_array == []
-				win_array.push("win")
-			else
-				win_array.push("nope")
+				return true
 			end
 		end
-		win_array.include?("win")
+		false
 	end
 
 	# Gives the option of playing again
-	def play_again
+	def play_again_input
 		puts "Play again? (type 'yes' or 'no')"
-		response = user_input
+		response = STDIN.gets.chomp.strip.downcase
+		unless response == "yes" || response == "no"
+			puts "\nNot a valid entry. Try again."
+			play_again_input
+		end
+		play_again(response)
+	end
+
+	def play_again(response)
 		if response == "yes"
 			puts "\n\n"
-			initialize
+			initialize(@input_given)
 		elsif response == "no"
 			puts "Goodbye!"
-		else
-			puts "\nNot a valid entry. Try again."
-			play_again
 		end
 	end
 
